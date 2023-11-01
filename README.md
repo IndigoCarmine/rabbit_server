@@ -1,6 +1,6 @@
 # rabbit_server
 
-A new Flutter project.
+It is server-side application for rabbit robot. ROS2 is unnecessary for us to control it.
 
 ## Getting Started
 
