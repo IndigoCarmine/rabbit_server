@@ -16,10 +16,8 @@ class WebSocketServer {
   Future<HttpServer>? _server;
   final List<WebSocketChannel> _channels = [];
   final StreamController<Map> _statusServeStream = StreamController<Map>();
-  late Timer _updateTimer;
 
   List<double> _motorPositions = List.filled(6, 0);
-  bool _isUpdate = false;
 
   final List<Motor> motors = const [
     Motor(0x01 << 2, "Front Left", mode: MotorMode.position),
@@ -66,10 +64,15 @@ class WebSocketServer {
           } else if (data == "ConnectionReflesh") {
             _connectionrefrash();
           }
-        }
-        if (decoded["type"] == DataTypes.motorRotation.index) {
+        } else if (decoded["type"] == DataTypes.motorRotation.index) {
           _motorPositions = (decoded["data"] as List).cast<double>();
-          _isUpdate = true;
+          for (int i = 0; i < 6; i++) {
+            _sendTaget(motors[i], _motorPositions[i]);
+          }
+        } else if (decoded["type"] == DataTypes.servoRotation.index) {
+          double data = decoded["data"];
+          usbCan.sendFrame(CANFrame.fromIdAndData(
+              0x1C, Float32List.fromList([data]).buffer.asUint8List(0, 4)));
         }
       });
     });
@@ -94,20 +97,10 @@ class WebSocketServer {
     });
     usbCan.connectUSB();
     usbCan.stream.listen(_serveMotorStatus);
-
-    _updateTimer = Timer.periodic(const Duration(milliseconds: 10), (_) {
-      if (!_isUpdate) {
-        return;
-      }
-      for (int i = 0; i < 6; i++) {
-        _sendTaget(motors[i], _motorPositions[i]);
-      }
-    });
   }
 
   void dispose() {
     _statusOutput.close();
-    _updateTimer.cancel();
   }
 
   void _serveMotorStatus(CANFrame frame) {

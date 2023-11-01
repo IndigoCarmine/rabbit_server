@@ -13,6 +13,18 @@ enum MotorMode {
   interlockStop,
 }
 
+enum MotorSetting {
+  currentPGain,
+  currentIGain,
+  currentDGain,
+  currentMax,
+
+  positionPGain,
+  positionIGain,
+  positionDGain,
+  positionMax,
+}
+
 class Motor {
   final int canBaseId;
   final String discription;
@@ -53,6 +65,8 @@ class Motor {
           CANFrame.fromIdAndData(canBaseId + 2, Uint8List.fromList([9, 0x00])));
     }
   }
+
+  void settingupdate(UsbCan usbCan) {}
 }
 
 class MotorButton extends StatelessWidget {

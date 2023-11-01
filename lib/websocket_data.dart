@@ -1,6 +1,7 @@
 enum DataTypes {
   motorRotation,
   buttons,
+  servoRotation,
 
   motorModeChenge,
   limitSwitchStop,
